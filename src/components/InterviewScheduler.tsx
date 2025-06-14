@@ -1,6 +1,6 @@
-
 import React, { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Clock, Video, MapPin, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type InterviewType = 'video' | 'phone' | 'in-person';
 
@@ -30,6 +32,7 @@ interface Interview {
 export default function InterviewScheduler() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [newInterview, setNewInterview] = useState({
     candidateName: '',
     position: '',
@@ -142,17 +145,20 @@ export default function InterviewScheduler() {
           Schedule Interview
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-4xl max-h-[80vh]">
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Interview Scheduler</DialogTitle>
+          <DialogDescription>
+            Schedule and manage interviews with candidates
+          </DialogDescription>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[60vh]">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Scheduling Form */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Schedule New Interview</h3>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input
                 placeholder="Candidate Name"
                 value={newInterview.candidateName}
@@ -165,63 +171,103 @@ export default function InterviewScheduler() {
               />
             </div>
 
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={setSelectedDate}
-              className="rounded-md border"
-            />
+            {/* Date Picker */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Interview Date</label>
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={cn(
+                      "w-full justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                    )}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={(date) => {
+                      setSelectedDate(date);
+                      setIsCalendarOpen(false);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                type="time"
-                value={newInterview.time}
-                onChange={(e) => setNewInterview({...newInterview, time: e.target.value})}
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Time</label>
+                <Input
+                  type="time"
+                  value={newInterview.time}
+                  onChange={(e) => setNewInterview({...newInterview, time: e.target.value})}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Duration</label>
+                <Select
+                  value={newInterview.duration.toString()}
+                  onValueChange={(value) => setNewInterview({...newInterview, duration: parseInt(value)})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="45">45 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Interview Type</label>
               <Select
-                value={newInterview.duration.toString()}
-                onValueChange={(value) => setNewInterview({...newInterview, duration: parseInt(value)})}
+                value={newInterview.type}
+                onValueChange={(value) => setNewInterview({...newInterview, type: value as InterviewType})}
               >
                 <SelectTrigger>
-                  <SelectValue placeholder="Duration" />
+                  <SelectValue placeholder="Interview Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="30">30 minutes</SelectItem>
-                  <SelectItem value="45">45 minutes</SelectItem>
-                  <SelectItem value="60">1 hour</SelectItem>
-                  <SelectItem value="90">1.5 hours</SelectItem>
-                  <SelectItem value="120">2 hours</SelectItem>
+                  <SelectItem value="video">Video Call</SelectItem>
+                  <SelectItem value="phone">Phone Call</SelectItem>
+                  <SelectItem value="in-person">In Person</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            <Select
-              value={newInterview.type}
-              onValueChange={(value) => setNewInterview({...newInterview, type: value as InterviewType})}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Interview Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="video">Video Call</SelectItem>
-                <SelectItem value="phone">Phone Call</SelectItem>
-                <SelectItem value="in-person">In Person</SelectItem>
-              </SelectContent>
-            </Select>
-
             {newInterview.type === 'in-person' && (
-              <Input
-                placeholder="Location"
-                value={newInterview.location}
-                onChange={(e) => setNewInterview({...newInterview, location: e.target.value})}
-              />
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Location</label>
+                <Input
+                  placeholder="Interview location"
+                  value={newInterview.location}
+                  onChange={(e) => setNewInterview({...newInterview, location: e.target.value})}
+                />
+              </div>
             )}
 
-            <Textarea
-              placeholder="Interview notes (optional)"
-              value={newInterview.notes}
-              onChange={(e) => setNewInterview({...newInterview, notes: e.target.value})}
-            />
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Notes (optional)</label>
+              <Textarea
+                placeholder="Interview notes"
+                value={newInterview.notes}
+                onChange={(e) => setNewInterview({...newInterview, notes: e.target.value})}
+                rows={3}
+              />
+            </div>
 
             <Button onClick={handleScheduleInterview} className="w-full">
               Schedule Interview
@@ -231,9 +277,9 @@ export default function InterviewScheduler() {
           {/* Scheduled Interviews */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Scheduled Interviews</h3>
-            <div className="space-y-3 max-h-[50vh] overflow-y-auto">
+            <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
               {interviews.map((interview) => (
-                <Card key={interview.id}>
+                <Card key={interview.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-3">
                     <div className="flex items-center justify-between">
                       <CardTitle className="text-base">{interview.candidateName}</CardTitle>
@@ -258,7 +304,7 @@ export default function InterviewScheduler() {
                         {getInterviewIcon(interview.type)}
                         <span className="capitalize">{interview.type}</span>
                         {interview.meetingLink && (
-                          <a href={interview.meetingLink} className="text-blue-500 hover:underline ml-2">
+                          <a href={interview.meetingLink} className="text-blue-500 hover:underline ml-2" target="_blank" rel="noopener noreferrer">
                             Join Meeting
                           </a>
                         )}
