@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import EmployerPortal from "./pages/EmployerPortal";
 import AdminPanel from "./pages/AdminPanel";
 import Bookmarks from "./pages/Bookmarks";
 import NotFound from "./pages/NotFound";
+import Applicants from "./pages/Applicants";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +35,7 @@ const App = () => (
           <Route element={<Layout><EmployerPortal /></Layout>} path="/employer" />
           <Route element={<Layout><Bookmarks /></Layout>} path="/bookmarks" />
           <Route element={<Layout><AdminPanel /></Layout>} path="/admin" />
+          <Route element={<Layout><Applicants /></Layout>} path="/employer/applications" />
           {/* Add future routes above */}
           <Route element={<NotFound />} path="*" />
         </Routes>
