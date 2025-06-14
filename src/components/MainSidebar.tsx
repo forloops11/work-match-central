@@ -11,12 +11,15 @@ import {
   Bell,
   LogIn,
   User,
+  MessageCircle,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import UserProfileModal from "./UserProfileModal";
+import MessagingCenter from "./MessagingCenter";
+import NotificationCenter from "./NotificationCenter";
 
 const navItems = [
   {
@@ -109,6 +112,16 @@ export default function MainSidebar() {
                   <p className="font-medium truncate">{user.name}</p>
                   <p className="text-xs text-blue-200 truncate">{user.email}</p>
                 </div>
+              </div>
+            </div>
+
+            {/* Communication Features */}
+            <div className="mt-4 space-y-2">
+              <div className="px-2">
+                <MessagingCenter />
+              </div>
+              <div className="px-2">
+                <NotificationCenter />
               </div>
             </div>
           </div>

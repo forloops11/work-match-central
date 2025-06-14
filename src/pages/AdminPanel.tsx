@@ -6,6 +6,10 @@ import UserManagement from "../components/admin/UserManagement";
 import JobManagement from "../components/admin/JobManagement";
 import CompanyManagement from "../components/admin/CompanyManagement";
 import AnalyticsPanel from "../components/admin/AnalyticsPanel";
+import AdvancedAnalytics from "../components/AdvancedAnalytics";
+import MessagingCenter from "../components/MessagingCenter";
+import NotificationCenter from "../components/NotificationCenter";
+import InterviewScheduler from "../components/InterviewScheduler";
 import { getAdminData, getAnalytics, updateJobStatus, updateCompanyStatus, deleteUser, User, Job, Company } from "@/utils/adminData";
 
 export default function AdminPanel() {
@@ -71,10 +75,18 @@ export default function AdminPanel() {
   return (
     <div className="min-h-screen py-10 px-8 bg-gradient-to-b from-blue-100 via-white to-blue-200">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold mb-8">Admin Panel</h2>
-        <div className="flex gap-4 mb-6">
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-3xl font-bold">Admin Panel</h2>
+          <div className="flex gap-3">
+            <MessagingCenter />
+            <NotificationCenter />
+            <InterviewScheduler />
+          </div>
+        </div>
+        
+        <div className="flex gap-4 mb-6 overflow-x-auto">
           <button
-            className={`px-5 py-2 rounded-t font-semibold border-b-2 ${
+            className={`px-5 py-2 rounded-t font-semibold border-b-2 whitespace-nowrap ${
               tab === "users"
                 ? "bg-white border-blue-700 text-blue-900"
                 : "text-blue-700 border-transparent bg-blue-50 hover:bg-white"
@@ -84,7 +96,7 @@ export default function AdminPanel() {
             Users
           </button>
           <button
-            className={`px-5 py-2 rounded-t font-semibold border-b-2 ${
+            className={`px-5 py-2 rounded-t font-semibold border-b-2 whitespace-nowrap ${
               tab === "jobs"
                 ? "bg-white border-blue-700 text-blue-900"
                 : "text-blue-700 border-transparent bg-blue-50 hover:bg-white"
@@ -94,26 +106,37 @@ export default function AdminPanel() {
             Job Posts
           </button>
           <button
-            className={`px-5 py-2 rounded-t font-semibold border-b-2 ${
+            className={`px-5 py-2 rounded-t font-semibold border-b-2 whitespace-nowrap ${
               tab === "companies"
                 ? "bg-white border-blue-700 text-blue-900"
                 : "text-blue-700 border-transparent bg-blue-50 hover:bg-white"
             }`}
             onClick={() => setTab("companies")}
           >
-            Company Registrations
+            Companies
           </button>
           <button
-            className={`px-5 py-2 rounded-t font-semibold border-b-2 ${
+            className={`px-5 py-2 rounded-t font-semibold border-b-2 whitespace-nowrap ${
               tab === "analytics"
                 ? "bg-white border-blue-700 text-blue-900"
                 : "text-blue-700 border-transparent bg-blue-50 hover:bg-white"
             }`}
             onClick={() => setTab("analytics")}
           >
-            Site Analytics
+            Analytics
+          </button>
+          <button
+            className={`px-5 py-2 rounded-t font-semibold border-b-2 whitespace-nowrap ${
+              tab === "advanced-analytics"
+                ? "bg-white border-blue-700 text-blue-900"
+                : "text-blue-700 border-transparent bg-blue-50 hover:bg-white"
+            }`}
+            onClick={() => setTab("advanced-analytics")}
+          >
+            Advanced Analytics
           </button>
         </div>
+        
         <div className="bg-white rounded-b-lg shadow p-6 border border-blue-100">
           {tab === "users" && (
             <UserManagement 
@@ -136,6 +159,9 @@ export default function AdminPanel() {
           )}
           {tab === "analytics" && (
             <AnalyticsPanel analytics={analytics} />
+          )}
+          {tab === "advanced-analytics" && (
+            <AdvancedAnalytics />
           )}
         </div>
       </div>
