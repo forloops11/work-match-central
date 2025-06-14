@@ -10,6 +10,7 @@ import {
   UserPlus,
   Bookmark,
   Bell,
+  LogIn,
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import clsx from "clsx";
@@ -54,9 +55,9 @@ const navItems = [
     section: "Account",
     links: [
       {
-        name: "Register/Login",
+        name: "Register / Login",
         to: "/register",
-        icon: UserPlus,
+        icon: LogIn,
       },
     ],
   },
