@@ -1,6 +1,7 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 const dummyJobs = [
   {
@@ -33,8 +34,50 @@ const dummyJobs = [
 ];
 
 export default function FindJobs() {
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
+  const [filteredJobs, setFilteredJobs] = useState(dummyJobs);
+
+  useEffect(() => {
+    // Get search parameters from URL
+    const keywordParam = searchParams.get('keyword') || '';
+    const locationParam = searchParams.get('location') || '';
+    
+    setSearch(keywordParam);
+    setLocation(locationParam);
+
+    // Filter jobs based on search parameters
+    const filtered = dummyJobs.filter(job => {
+      const matchesKeyword = !keywordParam || 
+        job.title.toLowerCase().includes(keywordParam.toLowerCase()) ||
+        job.skills.some(skill => skill.toLowerCase().includes(keywordParam.toLowerCase()));
+      
+      const matchesLocation = !locationParam || 
+        job.location.toLowerCase().includes(locationParam.toLowerCase());
+      
+      return matchesKeyword && matchesLocation;
+    });
+
+    setFilteredJobs(filtered);
+  }, [searchParams]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Filter jobs based on current search inputs
+    const filtered = dummyJobs.filter(job => {
+      const matchesKeyword = !search || 
+        job.title.toLowerCase().includes(search.toLowerCase()) ||
+        job.skills.some(skill => skill.toLowerCase().includes(search.toLowerCase()));
+      
+      const matchesLocation = !location || 
+        job.location.toLowerCase().includes(location.toLowerCase());
+      
+      return matchesKeyword && matchesLocation;
+    });
+    setFilteredJobs(filtered);
+  };
+
   return (
     <div className="min-h-screen py-12 px-8 bg-gradient-to-b from-blue-50 via-white to-blue-100">
       <div className="max-w-5xl mx-auto">
@@ -42,7 +85,7 @@ export default function FindJobs() {
         <p className="text-blue-800/80 mb-6">Search and filter jobs by your preference</p>
         <form
           className="flex flex-wrap gap-2 mb-8"
-          onSubmit={e => e.preventDefault()}
+          onSubmit={handleSearch}
         >
           <input
             type="text"
@@ -79,35 +122,41 @@ export default function FindJobs() {
           </button>
         </form>
         <div className="grid gap-6">
-          {dummyJobs.map((job) => (
-            <div
-              key={job.id}
-              className="flex flex-col md:flex-row items-center justify-between bg-white rounded-lg shadow px-6 py-5 border border-blue-100 group animate-fade-in"
-            >
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-lg font-bold text-blue-900">{job.title}</span>
-                  <span className="inline-flex text-xs bg-blue-100 text-blue-800 px-2 py-1 ml-2 rounded">{job.company}</span>
-                  <span className="inline-flex text-xs bg-blue-50 text-blue-700 px-2 py-1 ml-2 rounded"><b>{job.location}</b></span>
-                </div>
-                <div className="flex gap-2 flex-wrap text-xs mb-1">
-                  {job.skills.map(skill => (
-                    <span className="px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200" key={skill}>{skill}</span>
-                  ))}
-                </div>
-                <div className="font-medium text-blue-800/90">{job.salary}</div>
-              </div>
-              <div className="flex items-center gap-2 mt-4 md:mt-0">
-                <button className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow transition">
-                  Apply
-                </button>
-                <button className="px-4 py-2 rounded bg-white border border-blue-400 text-blue-700 font-medium hover:bg-blue-100 transition flex items-center gap-2">
-                  <span>{job.bookmarked ? "Bookmarked" : "Save"}</span>
-                  <Bookmark filled={job.bookmarked} />
-                </button>
-              </div>
+          {filteredJobs.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-blue-600">No jobs found matching your search criteria.</p>
             </div>
-          ))}
+          ) : (
+            filteredJobs.map((job) => (
+              <div
+                key={job.id}
+                className="flex flex-col md:flex-row items-center justify-between bg-white rounded-lg shadow px-6 py-5 border border-blue-100 group animate-fade-in"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-lg font-bold text-blue-900">{job.title}</span>
+                    <span className="inline-flex text-xs bg-blue-100 text-blue-800 px-2 py-1 ml-2 rounded">{job.company}</span>
+                    <span className="inline-flex text-xs bg-blue-50 text-blue-700 px-2 py-1 ml-2 rounded"><b>{job.location}</b></span>
+                  </div>
+                  <div className="flex gap-2 flex-wrap text-xs mb-1">
+                    {job.skills.map(skill => (
+                      <span className="px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200" key={skill}>{skill}</span>
+                    ))}
+                  </div>
+                  <div className="font-medium text-blue-800/90">{job.salary}</div>
+                </div>
+                <div className="flex items-center gap-2 mt-4 md:mt-0">
+                  <button className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow transition">
+                    Apply
+                  </button>
+                  <button className="px-4 py-2 rounded bg-white border border-blue-400 text-blue-700 font-medium hover:bg-blue-100 transition flex items-center gap-2">
+                    <span>{job.bookmarked ? "Bookmarked" : "Save"}</span>
+                    <Bookmark filled={job.bookmarked} />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

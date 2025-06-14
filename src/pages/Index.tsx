@@ -1,11 +1,28 @@
 
 import { Mail, Search } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const HERO_BG =
   "bg-gradient-to-r from-blue-800 via-blue-700 to-blue-600";
 
 export default function Index() {
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [searchLocation, setSearchLocation] = useState("");
+  const navigate = useNavigate();
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchKeyword.trim()) {
+      params.set('keyword', searchKeyword.trim());
+    }
+    if (searchLocation.trim()) {
+      params.set('location', searchLocation.trim());
+    }
+    navigate(`/jobs?${params.toString()}`);
+  };
+
   return (
     <div className={`min-h-screen flex flex-col ${HERO_BG} text-white`}>
       {/* Hero Section */}
@@ -20,12 +37,14 @@ export default function Index() {
           </p>
           <form
             className="flex flex-wrap justify-center items-center gap-2 max-w-xl mx-auto px-1 animate-fade-in"
-            onSubmit={e => { e.preventDefault(); }}
+            onSubmit={handleSearchSubmit}
           >
             <div className="flex-grow min-w-0">
               <input
                 type="text"
                 placeholder="Role / Keyword"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
                 className="w-full px-4 py-3 rounded-l-lg border-none outline-none focus:ring-2 focus:ring-blue-300 text-blue-800"
                 style={{ minWidth: 160 }}
               />
@@ -35,6 +54,8 @@ export default function Index() {
               <input
                 type="text"
                 placeholder="Location"
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
                 className="w-36 px-3 py-3 rounded-none border-none outline-none focus:ring-2 focus:ring-blue-300 text-blue-800"
               />
             </div>
