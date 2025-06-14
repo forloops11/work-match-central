@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { FileText, Users, Edit, Trash2 } from "lucide-react";
+import { FileText, Users, Edit, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,6 +34,7 @@ export default function EmployerPortal() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isJobFormOpen, setIsJobFormOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const [companyProfile, setCompanyProfile] = useState<CompanyProfile>({
     companyName: "ACME Corp.",
     website: "https://acme.com",
@@ -43,63 +44,83 @@ export default function EmployerPortal() {
 
   // Load jobs and company profile from localStorage on mount
   useEffect(() => {
-    const savedJobs = localStorage.getItem('employerJobs');
-    const savedProfile = localStorage.getItem('companyProfile');
-    
-    if (savedJobs) {
-      setJobs(JSON.parse(savedJobs));
-    } else {
-      // Initialize with sample data
-      const initialJobs = [
-        {
-          id: 1,
-          title: "Senior Frontend Developer",
-          company: "ACME Corp.",
-          location: "Remote",
-          salary: "$100k - $130k",
-          applications: 12,
-          status: "Open" as const,
-          datePosted: "2024-01-15",
-          description: "We are looking for a senior frontend developer...",
-          requirements: "5+ years React experience",
-          skills: ["React", "TypeScript", "CSS"],
-          jobType: "Full-time"
-        },
-        {
-          id: 2,
-          title: "Data Scientist",
-          company: "ACME Corp.",
-          location: "New York",
-          salary: "$120k - $150k",
-          applications: 6,
-          status: "Closed" as const,
-          datePosted: "2024-01-10",
-          description: "Join our data science team...",
-          requirements: "PhD in relevant field",
-          skills: ["Python", "Machine Learning", "SQL"],
-          jobType: "Full-time"
-        }
-      ];
-      setJobs(initialJobs);
-      localStorage.setItem('employerJobs', JSON.stringify(initialJobs));
+    try {
+      const savedJobs = localStorage.getItem('employerJobs');
+      const savedProfile = localStorage.getItem('companyProfile');
+      
+      if (savedJobs) {
+        const parsedJobs = JSON.parse(savedJobs);
+        setJobs(Array.isArray(parsedJobs) ? parsedJobs : []);
+      } else {
+        // Initialize with sample data
+        const initialJobs = [
+          {
+            id: 1,
+            title: "Senior Frontend Developer",
+            company: "ACME Corp.",
+            location: "Remote",
+            salary: "$100k - $130k",
+            applications: 12,
+            status: "Open" as const,
+            datePosted: "2024-01-15",
+            description: "We are looking for a senior frontend developer...",
+            requirements: "5+ years React experience",
+            skills: ["React", "TypeScript", "CSS"],
+            jobType: "Full-time"
+          },
+          {
+            id: 2,
+            title: "Data Scientist",
+            company: "ACME Corp.",
+            location: "New York",
+            salary: "$120k - $150k",
+            applications: 6,
+            status: "Closed" as const,
+            datePosted: "2024-01-10",
+            description: "Join our data science team...",
+            requirements: "PhD in relevant field",
+            skills: ["Python", "Machine Learning", "SQL"],
+            jobType: "Full-time"
+          }
+        ];
+        setJobs(initialJobs);
+        localStorage.setItem('employerJobs', JSON.stringify(initialJobs));
+      }
+      
+      if (savedProfile) {
+        const parsedProfile = JSON.parse(savedProfile);
+        setCompanyProfile(parsedProfile);
+      }
+    } catch (error) {
+      console.error('Error loading data from localStorage:', error);
+      toast({
+        title: "Warning",
+        description: "Some data couldn't be loaded. Using default values.",
+        variant: "destructive",
+      });
     }
-    
-    if (savedProfile) {
-      setCompanyProfile(JSON.parse(savedProfile));
-    }
-  }, []);
+  }, [toast]);
 
   const handleJobPosted = (job: Job) => {
-    let updatedJobs;
-    if (editingJob) {
-      updatedJobs = jobs.map(j => j.id === job.id ? job : j);
-    } else {
-      updatedJobs = [...jobs, job];
+    try {
+      let updatedJobs;
+      if (editingJob) {
+        updatedJobs = jobs.map(j => j.id === job.id ? job : j);
+      } else {
+        updatedJobs = [...jobs, job];
+      }
+      
+      setJobs(updatedJobs);
+      localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
+      setEditingJob(null);
+    } catch (error) {
+      console.error('Error saving job:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save job posting. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    setJobs(updatedJobs);
-    localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
-    setEditingJob(null);
   };
 
   const handleEditJob = (job: Job) => {
@@ -108,39 +129,72 @@ export default function EmployerPortal() {
   };
 
   const handleDeleteJob = (jobId: number) => {
-    if (confirm("Are you sure you want to delete this job posting?")) {
-      const updatedJobs = jobs.filter(job => job.id !== jobId);
-      setJobs(updatedJobs);
-      localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
-      toast({
-        title: "Job Deleted",
-        description: "Job posting has been removed successfully.",
-      });
+    if (confirm("Are you sure you want to delete this job posting? This action cannot be undone.")) {
+      try {
+        const updatedJobs = jobs.filter(job => job.id !== jobId);
+        setJobs(updatedJobs);
+        localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
+        toast({
+          title: "Job Deleted",
+          description: "Job posting has been removed successfully.",
+        });
+      } catch (error) {
+        console.error('Error deleting job:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete job posting. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
   const toggleJobStatus = (jobId: number) => {
-    const updatedJobs = jobs.map(job => 
-      job.id === jobId 
-        ? { ...job, status: job.status === "Open" ? "Closed" as const : "Open" as const }
-        : job
-    );
-    setJobs(updatedJobs);
-    localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
-    toast({
-      title: "Status Updated",
-      description: "Job status has been updated successfully.",
-    });
+    try {
+      const updatedJobs = jobs.map(job => 
+        job.id === jobId 
+          ? { ...job, status: job.status === "Open" ? "Closed" as const : "Open" as const }
+          : job
+      );
+      setJobs(updatedJobs);
+      localStorage.setItem('employerJobs', JSON.stringify(updatedJobs));
+      toast({
+        title: "Status Updated",
+        description: "Job status has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error updating job status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update job status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    localStorage.setItem('companyProfile', JSON.stringify(companyProfile));
-    toast({
-      title: "Profile Saved",
-      description: "Company profile has been updated successfully.",
-    });
+    try {
+      localStorage.setItem('companyProfile', JSON.stringify(companyProfile));
+      toast({
+        title: "Profile Saved",
+        description: "Company profile has been updated successfully.",
+      });
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save company profile. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
+
+  const filteredJobs = jobs.filter(job =>
+    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    job.company.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen py-12 px-8 bg-gradient-to-b from-blue-50 via-white to-blue-100">
@@ -171,7 +225,9 @@ export default function EmployerPortal() {
         <div className="bg-white p-6 rounded-b-lg shadow border border-blue-100">
           {tab === "jobs" ? (
             <MyJobOpenings 
-              jobs={jobs}
+              jobs={filteredJobs}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
               onPostJob={() => setIsJobFormOpen(true)}
               onEditJob={handleEditJob}
               onDeleteJob={handleDeleteJob}
@@ -202,12 +258,16 @@ export default function EmployerPortal() {
 
 function MyJobOpenings({ 
   jobs, 
+  searchTerm,
+  onSearchChange,
   onPostJob, 
   onEditJob, 
   onDeleteJob, 
   onToggleStatus 
 }: {
   jobs: Job[];
+  searchTerm: string;
+  onSearchChange: (term: string) => void;
   onPostJob: () => void;
   onEditJob: (job: Job) => void;
   onDeleteJob: (id: number) => void;
@@ -223,6 +283,20 @@ function MyJobOpenings({
           + Post New Job
         </Button>
       </div>
+      
+      {jobs.length > 0 && (
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Input
+              placeholder="Search jobs by title, location, or company..."
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+      )}
       
       {jobs.length === 0 ? (
         <div className="text-center py-8">
