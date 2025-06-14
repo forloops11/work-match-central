@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
@@ -10,6 +9,12 @@ interface User {
   experience?: string;
   company?: string;
   website?: string;
+  phone?: string;
+  location?: string;
+  bio?: string;
+  education?: string;
+  linkedIn?: string;
+  github?: string;
 }
 
 interface AuthContextType {
@@ -17,6 +22,7 @@ interface AuthContextType {
   login: (email: string, password: string, type: 'jobseeker' | 'employer') => Promise<boolean>;
   register: (userData: Partial<User>, password: string) => Promise<boolean>;
   logout: () => void;
+  updateProfile: (profileData: Partial<User>) => Promise<boolean>;
   isAuthenticated: boolean;
 }
 
@@ -27,7 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check for existing session on mount
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
@@ -36,7 +41,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string, type: 'jobseeker' | 'employer'): Promise<boolean> => {
-    // Mock authentication - in real app, this would call an API
     const mockUser: User = {
       id: Math.random().toString(36).substr(2, 9),
       name: email.split('@')[0],
@@ -51,7 +55,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (userData: Partial<User>, password: string): Promise<boolean> => {
-    // Mock registration
     const newUser: User = {
       id: Math.random().toString(36).substr(2, 9),
       name: userData.name || '',
@@ -69,6 +72,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return true;
   };
 
+  const updateProfile = async (profileData: Partial<User>): Promise<boolean> => {
+    if (!user) return false;
+
+    const updatedUser = { ...user, ...profileData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    return true;
+  };
+
   const logout = () => {
     setUser(null);
     setIsAuthenticated(false);
@@ -76,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateProfile, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );
