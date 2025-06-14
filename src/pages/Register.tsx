@@ -1,7 +1,11 @@
-
 import { useState } from "react";
 import { UserPlus, LogIn, Briefcase } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export default function Register() {
   const [regType, setRegType] = useState<"jobseeker" | "employer">("jobseeker");
@@ -90,8 +94,63 @@ export default function Register() {
 
 function LoginForm() {
   const [type, setType] = useState<"jobseeker" | "employer">("jobseeker");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  
+  const { login } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors: { email?: string; password?: string } = {};
+    
+    if (!email) {
+      newErrors.email = "Email is required";
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+      newErrors.email = "Email is invalid";
+    }
+    
+    if (!password) {
+      newErrors.password = "Password is required";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const success = await login(email, password, type);
+      if (success) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Login Failed",
+        description: "Invalid credentials. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <form className="space-y-4 w-full animate-fade-in" autoComplete="off">
+    <form className="space-y-4 w-full animate-fade-in" onSubmit={handleSubmit}>
       <div className="flex mb-3">
         <button
           type="button"
@@ -116,79 +175,290 @@ function LoginForm() {
           Employer
         </button>
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Email Address</label>
-        <input className="w-full border rounded px-4 py-2" required type="email" placeholder="john@email.com" />
+        <Input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="john@email.com"
+          className={errors.email ? "border-red-500" : ""}
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Password</label>
-        <input className="w-full border rounded px-4 py-2" required type="password" placeholder="********" />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="********"
+          className={errors.password ? "border-red-500" : ""}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
       </div>
-      <button className="mt-3 w-full rounded px-5 py-2 bg-blue-900 text-white font-semibold hover:bg-blue-700 transition-all">
-        Login
-      </button>
+      
+      <Button 
+        type="submit" 
+        className="w-full bg-blue-900 hover:bg-blue-700"
+        disabled={isLoading}
+      >
+        {isLoading ? "Logging in..." : "Login"}
+      </Button>
     </form>
   );
 }
 
 function JobSeekerRegistrationForm() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    skills: "",
+    experience: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const { register } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const success = await register({
+        name: formData.name,
+        email: formData.email,
+        type: "jobseeker",
+        skills: formData.skills.split(',').map(s => s.trim()).filter(Boolean),
+        experience: formData.experience,
+      }, formData.password);
+      
+      if (success) {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to QuickHire!",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <form className="space-y-4 w-full animate-fade-in" autoComplete="off">
+    <form className="space-y-4 w-full animate-fade-in" onSubmit={handleSubmit}>
       <div>
         <label className="font-semibold mb-1 block">Full Name</label>
-        <input className="w-full border rounded px-4 py-2" required type="text" placeholder="John Doe" />
+        <Input
+          type="text"
+          value={formData.name}
+          onChange={(e) => setFormData({...formData, name: e.target.value})}
+          placeholder="John Doe"
+          className={errors.name ? "border-red-500" : ""}
+        />
+        {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Email Address</label>
-        <input className="w-full border rounded px-4 py-2" required type="email" placeholder="john@email.com" />
+        <Input
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          placeholder="john@email.com"
+          className={errors.email ? "border-red-500" : ""}
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Password</label>
-        <input className="w-full border rounded px-4 py-2" required type="password" placeholder="********" />
+        <Input
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({...formData, password: e.target.value})}
+          placeholder="********"
+          className={errors.password ? "border-red-500" : ""}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
       </div>
-      <div>
-        <label className="font-semibold mb-1 block">Resume (PDF)</label>
-        <input className="w-full border rounded px-4 py-2 bg-blue-50" required type="file" accept="application/pdf" />
-      </div>
+      
       <div className="flex gap-2">
         <div className="flex-1">
           <label className="font-semibold mb-1 block">Skills</label>
-          <input className="w-full border rounded px-4 py-2" required type="text" placeholder="React, Node.js, AWS..." />
+          <Input
+            type="text"
+            value={formData.skills}
+            onChange={(e) => setFormData({...formData, skills: e.target.value})}
+            placeholder="React, Node.js, AWS..."
+          />
         </div>
         <div className="flex-1">
           <label className="font-semibold mb-1 block">Experience</label>
-          <input className="w-full border rounded px-4 py-2" type="text" placeholder="e.g. 3 years" />
+          <Input
+            type="text"
+            value={formData.experience}
+            onChange={(e) => setFormData({...formData, experience: e.target.value})}
+            placeholder="e.g. 3 years"
+          />
         </div>
       </div>
-      <button className="mt-3 w-full rounded px-5 py-2 bg-blue-900 text-white font-semibold hover:bg-blue-700 transition-all">
-        Register
-      </button>
+      
+      <Button 
+        type="submit" 
+        className="w-full bg-blue-900 hover:bg-blue-700"
+        disabled={isLoading}
+      >
+        {isLoading ? "Registering..." : "Register"}
+      </Button>
     </form>
   );
 }
 
 function EmployerRegistrationForm() {
+  const [formData, setFormData] = useState({
+    company: "",
+    email: "",
+    password: "",
+    website: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  const { register } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.company) newErrors.company = "Company name is required";
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = "Email is invalid";
+    if (!formData.password) newErrors.password = "Password is required";
+    else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const success = await register({
+        name: formData.company,
+        email: formData.email,
+        type: "employer",
+        company: formData.company,
+        website: formData.website,
+      }, formData.password);
+      
+      if (success) {
+        toast({
+          title: "Registration Successful",
+          description: "Welcome to QuickHire!",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <form className="space-y-4 w-full animate-fade-in">
+    <form className="space-y-4 w-full animate-fade-in" onSubmit={handleSubmit}>
       <div>
         <label className="font-semibold mb-1 block">Company Name</label>
-        <input className="w-full border rounded px-4 py-2" required type="text" placeholder="ACME Corp." />
+        <Input
+          type="text"
+          value={formData.company}
+          onChange={(e) => setFormData({...formData, company: e.target.value})}
+          placeholder="ACME Corp."
+          className={errors.company ? "border-red-500" : ""}
+        />
+        {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Contact Email</label>
-        <input className="w-full border rounded px-4 py-2" required type="email" placeholder="jobs@acme.com" />
+        <Input
+          type="email"
+          value={formData.email}
+          onChange={(e) => setFormData({...formData, email: e.target.value})}
+          placeholder="jobs@acme.com"
+          className={errors.email ? "border-red-500" : ""}
+        />
+        {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Password</label>
-        <input className="w-full border rounded px-4 py-2" required type="password" />
+        <Input
+          type="password"
+          value={formData.password}
+          onChange={(e) => setFormData({...formData, password: e.target.value})}
+          placeholder="********"
+          className={errors.password ? "border-red-500" : ""}
+        />
+        {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
       </div>
+      
       <div>
         <label className="font-semibold mb-1 block">Company Website</label>
-        <input className="w-full border rounded px-4 py-2" type="url" placeholder="https://www.example.com" />
+        <Input
+          type="url"
+          value={formData.website}
+          onChange={(e) => setFormData({...formData, website: e.target.value})}
+          placeholder="https://www.example.com"
+        />
       </div>
-      <button className="mt-3 w-full rounded px-5 py-2 bg-blue-900 text-white font-semibold hover:bg-blue-700 transition-all">
-        Register
-      </button>
+      
+      <Button 
+        type="submit" 
+        className="w-full bg-blue-900 hover:bg-blue-700"
+        disabled={isLoading}
+      >
+        {isLoading ? "Registering..." : "Register"}
+      </Button>
     </form>
   );
 }

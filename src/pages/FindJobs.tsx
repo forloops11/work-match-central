@@ -1,7 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { Search } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import ApplicationModal from "@/components/ApplicationModal";
 
 const dummyJobs = [
   {
@@ -104,6 +104,17 @@ export default function FindJobs() {
   const [salary, setSalary] = useState("");
   const [filteredJobs, setFilteredJobs] = useState(dummyJobs);
   const [bookmarkedJobs, setBookmarkedJobs] = useState<number[]>([]);
+  const [applicationModal, setApplicationModal] = useState<{
+    isOpen: boolean;
+    jobId: number;
+    jobTitle: string;
+    company: string;
+  }>({
+    isOpen: false,
+    jobId: 0,
+    jobTitle: "",
+    company: "",
+  });
 
   // Load bookmarks from localStorage on mount
   useEffect(() => {
@@ -187,8 +198,22 @@ export default function FindJobs() {
     localStorage.setItem('bookmarkedJobs', JSON.stringify(newBookmarks));
   };
 
-  const handleApply = (jobId: number, jobTitle: string) => {
-    alert(`Application submitted for: ${jobTitle}`);
+  const handleApply = (jobId: number, jobTitle: string, company: string) => {
+    setApplicationModal({
+      isOpen: true,
+      jobId,
+      jobTitle,
+      company,
+    });
+  };
+
+  const closeApplicationModal = () => {
+    setApplicationModal({
+      isOpen: false,
+      jobId: 0,
+      jobTitle: "",
+      company: "",
+    });
   };
 
   const clearFilters = () => {
@@ -200,7 +225,7 @@ export default function FindJobs() {
   };
 
   return (
-    <div className="min-h-screen py-12 px-8 bg-gradient-to-b from-blue-50 via-white to-blue-100">
+    <div className="min-h-screen py-12 px-4 md:px-8 bg-gradient-to-b from-blue-50 via-white to-blue-100">
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div>
@@ -272,31 +297,31 @@ export default function FindJobs() {
             filteredJobs.map((job) => (
               <div
                 key={job.id}
-                className="flex flex-col md:flex-row items-center justify-between bg-white rounded-lg shadow px-6 py-5 border border-blue-100 group animate-fade-in"
+                className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white rounded-lg shadow px-6 py-5 border border-blue-100 group animate-fade-in"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                <div className="flex-1 min-w-0 mb-4 md:mb-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="text-lg font-bold text-blue-900">{job.title}</span>
-                    <span className="inline-flex text-xs bg-blue-100 text-blue-800 px-2 py-1 ml-2 rounded">{job.company}</span>
-                    <span className="inline-flex text-xs bg-blue-50 text-blue-700 px-2 py-1 ml-2 rounded"><b>{job.location}</b></span>
+                    <span className="inline-flex text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{job.company}</span>
+                    <span className="inline-flex text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded"><b>{job.location}</b></span>
                   </div>
-                  <div className="flex gap-2 flex-wrap text-xs mb-1">
+                  <div className="flex gap-2 flex-wrap text-xs mb-2">
                     {job.skills.map(skill => (
                       <span className="px-2 py-1 rounded bg-blue-50 text-blue-800 border border-blue-200" key={skill}>{skill}</span>
                     ))}
                   </div>
                   <div className="font-medium text-blue-800/90">{job.salary}</div>
                 </div>
-                <div className="flex items-center gap-2 mt-4 md:mt-0">
+                <div className="flex items-center gap-2 w-full md:w-auto">
                   <button 
-                    onClick={() => handleApply(job.id, job.title)}
-                    className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow transition"
+                    onClick={() => handleApply(job.id, job.title, job.company)}
+                    className="flex-1 md:flex-none px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 font-semibold shadow transition"
                   >
                     Apply
                   </button>
                   <button 
                     onClick={() => handleBookmark(job.id)}
-                    className="px-4 py-2 rounded bg-white border border-blue-400 text-blue-700 font-medium hover:bg-blue-100 transition flex items-center gap-2"
+                    className="flex-1 md:flex-none px-4 py-2 rounded bg-white border border-blue-400 text-blue-700 font-medium hover:bg-blue-100 transition flex items-center justify-center gap-2"
                   >
                     <span>{job.bookmarked ? "Bookmarked" : "Save"}</span>
                     <Bookmark filled={job.bookmarked} />
@@ -307,6 +332,14 @@ export default function FindJobs() {
           )}
         </div>
       </div>
+
+      <ApplicationModal
+        isOpen={applicationModal.isOpen}
+        onClose={closeApplicationModal}
+        jobId={applicationModal.jobId}
+        jobTitle={applicationModal.jobTitle}
+        company={applicationModal.company}
+      />
     </div>
   );
 }
