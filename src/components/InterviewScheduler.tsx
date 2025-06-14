@@ -11,6 +11,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar as CalendarIcon, Clock, Video, MapPin, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+type InterviewType = 'video' | 'phone' | 'in-person';
+
 interface Interview {
   id: string;
   candidateName: string;
@@ -18,7 +20,7 @@ interface Interview {
   date: Date;
   time: string;
   duration: number;
-  type: 'video' | 'phone' | 'in-person';
+  type: InterviewType;
   location?: string;
   meetingLink?: string;
   notes?: string;
@@ -33,7 +35,7 @@ export default function InterviewScheduler() {
     position: '',
     time: '',
     duration: 60,
-    type: 'video' as const,
+    type: 'video' as InterviewType,
     location: '',
     notes: ''
   });
@@ -106,7 +108,7 @@ export default function InterviewScheduler() {
     });
   };
 
-  const getInterviewIcon = (type: string) => {
+  const getInterviewIcon = (type: InterviewType) => {
     switch (type) {
       case 'video':
         return <Video size={16} className="text-blue-500" />;
@@ -195,7 +197,7 @@ export default function InterviewScheduler() {
 
             <Select
               value={newInterview.type}
-              onValueChange={(value: 'video' | 'phone' | 'in-person') => setNewInterview({...newInterview, type: value})}
+              onValueChange={(value) => setNewInterview({...newInterview, type: value as InterviewType})}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Interview Type" />
