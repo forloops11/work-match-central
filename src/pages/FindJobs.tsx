@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Search, Filter, BookmarkPlus, Sparkles } from "lucide-react";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -283,7 +282,7 @@ export default function FindJobs() {
   const handleApply = (jobId: number, jobTitle: string, company: string) => {
     setApplicationModal({
       isOpen: true,
-      jobId,
+      jobId: jobId.toString(), // Convert number to string
       jobTitle,
       company,
     });
