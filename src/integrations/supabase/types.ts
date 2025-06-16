@@ -9,16 +9,350 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bookmarked_jobs: {
+        Row: {
+          created_at: string | null
+          id: string
+          job_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          job_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookmarked_jobs_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookmarked_jobs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      companies: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          founded_year: number | null
+          id: string
+          industry: string | null
+          location: string | null
+          logo_url: string | null
+          name: string
+          owner_id: string | null
+          size: string | null
+          status: Database["public"]["Enums"]["company_status"] | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name: string
+          owner_id?: string | null
+          size?: string | null
+          status?: Database["public"]["Enums"]["company_status"] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          location?: string | null
+          logo_url?: string | null
+          name?: string
+          owner_id?: string | null
+          size?: string | null
+          status?: Database["public"]["Enums"]["company_status"] | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "companies_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_applications: {
+        Row: {
+          applicant_id: string | null
+          applied_at: string | null
+          cover_letter: string | null
+          id: string
+          job_id: string | null
+          notes: string | null
+          resume_url: string | null
+          reviewed_at: string | null
+          status: Database["public"]["Enums"]["application_status"] | null
+        }
+        Insert: {
+          applicant_id?: string | null
+          applied_at?: string | null
+          cover_letter?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+        }
+        Update: {
+          applicant_id?: string | null
+          applied_at?: string | null
+          cover_letter?: string | null
+          id?: string
+          job_id?: string | null
+          notes?: string | null
+          resume_url?: string | null
+          reviewed_at?: string | null
+          status?: Database["public"]["Enums"]["application_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_applicant_id_fkey"
+            columns: ["applicant_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          company_id: string | null
+          created_at: string | null
+          description: string | null
+          experience_level: string | null
+          expires_at: string | null
+          id: string
+          job_type: string | null
+          location: string | null
+          posted_by: string | null
+          remote_option: string | null
+          requirements: string | null
+          salary_currency: string | null
+          salary_max: number | null
+          salary_min: number | null
+          skills: string[] | null
+          status: Database["public"]["Enums"]["job_status"] | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          experience_level?: string | null
+          expires_at?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string | null
+          remote_option?: string | null
+          requirements?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          company_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          experience_level?: string | null
+          expires_at?: string | null
+          id?: string
+          job_type?: string | null
+          location?: string | null
+          posted_by?: string | null
+          remote_option?: string | null
+          requirements?: string | null
+          salary_currency?: string | null
+          salary_max?: number | null
+          salary_min?: number | null
+          skills?: string[] | null
+          status?: Database["public"]["Enums"]["job_status"] | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_posted_by_fkey"
+            columns: ["posted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          education: string | null
+          email: string
+          experience: string | null
+          full_name: string | null
+          github_url: string | null
+          id: string
+          linkedin_url: string | null
+          location: string | null
+          phone: string | null
+          skills: string[] | null
+          updated_at: string | null
+          user_type: Database["public"]["Enums"]["user_type"]
+          website_url: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          education?: string | null
+          email: string
+          experience?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id: string
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_type?: Database["public"]["Enums"]["user_type"]
+          website_url?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          education?: string | null
+          email?: string
+          experience?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id?: string
+          linkedin_url?: string | null
+          location?: string | null
+          phone?: string | null
+          skills?: string[] | null
+          updated_at?: string | null
+          user_type?: Database["public"]["Enums"]["user_type"]
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      saved_searches: {
+        Row: {
+          created_at: string | null
+          experience_level: string | null
+          id: string
+          job_type: string | null
+          keyword: string | null
+          location: string | null
+          name: string
+          remote_option: string | null
+          salary_min: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          experience_level?: string | null
+          id?: string
+          job_type?: string | null
+          keyword?: string | null
+          location?: string | null
+          name: string
+          remote_option?: string | null
+          salary_min?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          experience_level?: string | null
+          id?: string
+          job_type?: string | null
+          keyword?: string | null
+          location?: string | null
+          name?: string
+          remote_option?: string | null
+          salary_min?: number | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_searches_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_type: {
+        Args: { user_id: string }
+        Returns: Database["public"]["Enums"]["user_type"]
+      }
+      is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      application_status: "pending" | "reviewed" | "accepted" | "rejected"
+      company_status: "pending" | "approved" | "rejected"
+      job_status: "pending" | "approved" | "rejected" | "closed"
+      user_type: "jobseeker" | "employer" | "admin"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +467,11 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      application_status: ["pending", "reviewed", "accepted", "rejected"],
+      company_status: ["pending", "approved", "rejected"],
+      job_status: ["pending", "approved", "rejected", "closed"],
+      user_type: ["jobseeker", "employer", "admin"],
+    },
   },
 } as const

@@ -10,6 +10,15 @@ import { useNavigate } from "react-router-dom";
 export default function Register() {
   const [regType, setRegType] = useState<"jobseeker" | "employer">("jobseeker");
   const [regTab, setRegTab] = useState<"login" | "register">("login");
+  const { loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-900"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen px-4 py-10 flex items-center justify-center bg-gradient-to-tr from-blue-200 via-blue-50 to-blue-100">
@@ -137,6 +146,12 @@ function LoginForm() {
           description: "Welcome back!",
         });
         navigate("/");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: "Invalid credentials. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({
@@ -258,9 +273,15 @@ function JobSeekerRegistrationForm() {
       if (success) {
         toast({
           title: "Registration Successful",
-          description: "Welcome to QuickHire!",
+          description: "Welcome to QuickHire! Please check your email to verify your account.",
         });
         navigate("/");
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({
@@ -389,9 +410,15 @@ function EmployerRegistrationForm() {
       if (success) {
         toast({
           title: "Registration Successful",
-          description: "Welcome to QuickHire!",
+          description: "Welcome to QuickHire! Please check your email to verify your account.",
         });
         navigate("/");
+      } else {
+        toast({
+          title: "Registration Failed",
+          description: "Something went wrong. Please try again.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({

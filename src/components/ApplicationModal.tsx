@@ -5,11 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ApplicationModalProps {
   isOpen: boolean;
   onClose: () => void;
-  jobId: number;
+  jobId: string;
   jobTitle: string;
   company: string;
 }
@@ -23,7 +24,7 @@ export default function ApplicationModal({ isOpen, onClose, jobId, jobTitle, com
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !user) {
       toast({
         title: "Authentication Required",
         description: "Please log in to apply for jobs.",
@@ -34,34 +35,43 @@ export default function ApplicationModal({ isOpen, onClose, jobId, jobTitle, com
 
     setIsSubmitting(true);
 
-    // Mock application submission
-    setTimeout(() => {
-      const applications = JSON.parse(localStorage.getItem('applications') || '[]');
-      const newApplication = {
-        id: Math.random().toString(36).substr(2, 9),
-        jobId,
-        jobTitle,
-        company,
-        userId: user?.id,
-        userName: user?.name,
-        userEmail: user?.email,
-        coverLetter,
-        status: 'pending',
-        appliedAt: new Date().toISOString(),
-      };
+    try {
+      const { error } = await supabase
+        .from('job_applications')
+        .insert({
+          job_id: jobId,
+          applicant_id: user.id,
+          cover_letter: coverLetter,
+          status: 'pending'
+        });
 
-      applications.push(newApplication);
-      localStorage.setItem('applications', JSON.stringify(applications));
+      if (error) {
+        console.error('Application submission error:', error);
+        toast({
+          title: "Application Failed",
+          description: "There was an error submitting your application. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       toast({
         title: "Application Submitted!",
         description: `Your application for ${jobTitle} at ${company} has been submitted successfully.`,
       });
 
-      setIsSubmitting(false);
       setCoverLetter('');
       onClose();
-    }, 1000);
+    } catch (error) {
+      console.error('Application submission error:', error);
+      toast({
+        title: "Application Failed",
+        description: "There was an unexpected error. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
