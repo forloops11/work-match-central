@@ -162,12 +162,12 @@ export default function FindJobs() {
   
   const [applicationModal, setApplicationModal] = useState<{
     isOpen: boolean;
-    jobId: number;
+    jobId: string; // Changed from number to string
     jobTitle: string;
     company: string;
   }>({
     isOpen: false,
-    jobId: 0,
+    jobId: "", // Changed from 0 to empty string
     jobTitle: "",
     company: "",
   });
@@ -291,7 +291,7 @@ export default function FindJobs() {
   const closeApplicationModal = () => {
     setApplicationModal({
       isOpen: false,
-      jobId: 0,
+      jobId: "", // Changed from 0 to empty string
       jobTitle: "",
       company: "",
     });
